@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+<style>
+*{margin: 0; padding: 0;}
+ul,li{list-style: none;}
+
+html{overflow: hidden;}
+body{background: #000;}
+#c1{background: #000;}
+</style>
+<script>
+function rnd(n,m){
+	return Math.floor(Math.random()*(m-n)+1);//n+1~m
+}
+window.onload=function(){
+	var oCanvas=document.getElementById('c1');
+	var gd=oCanvas.getContext('2d');
+	var color={r:0,g:0,b:0,a:0};
+
+	//初始化canvas
+	var winWidth=window.innerWidth;
+	var winHeight=window.innerHeight;
+	oCanvas.width=winWidth;
+	oCanvas.height=winHeight;
+
+	var n=5;
+	var aPoint=[];
+	var oldPoint=[];//保存之前的阴影
+	for(var i=0;i<n;i++){
+		aPoint[i]={
+			w:1,
+			h:1,
+			x:rnd(0,winWidth),//随机位置
+			y:rnd(0,winHeight),
+			speedX:(-10,10),
+			speedY:(-10,10)
+		};
+	}
+	//随机颜色
+	color.r=rnd(0,255);
+	color.g=rnd(0,255);
+	color.b=rnd(0,255);
+	color.a=Math.random();
+	setInterval(function(){
+		gd.clearRect(0,0,winWidth,winHeight);
+		for(var i=0;i<n;i++){
+			drawPoint(aPoint[i]);
+
+			//修改坐标
+			aPoint[i].x+=aPoint[i].speedX;
+			aPoint[i].y+=aPoint[i].speedY;
+			//限制
+			if(aPoint[i].x<0){
+				aPoint[i].speedX*=-1;
+			}else if(aPoint[i].x>winWidth){
+				aPoint[i].speedX*=-1;
+			}
+			if(aPoint[i].y<0){
+				aPoint[i].speedY*=-1;
+			}else if(aPoint[i].y>winHeight){
+				aPoint[i].speedY*=-1;
+			}
+		}
+		//连接
+		gd.beginPath();
+		gd.moveTo(aPoint[0].x,aPoint[0].y);//移到第一个点
+		for(var i=1;i<n;i++){
+			gd.lineTo(aPoint[i].x,aPoint[i].y);
+		}
+		gd.closePath();
+		//gd.strokeStyle='ff7e00';
+		gd.strokeStyle='rgba('+color.r+','+color.g+','+color.b+','+color.a+')';
+		gd.stroke();
+
+		//保存位置信息
+		var arr=[];//存放5个点的位置信息
+		for(var i=0;i<n;i++){
+			arr.push({x:aPoint[i].x,y:aPoint[i].y});
+		}
+		oldPoint.push(arr);
+
+		while(oldPoint.length>20){
+			oldPoint.shift();
+		}
+
+		//绘制阴影
+		for(var i=0;i<oldPoint.length;i++){
+			gd.beginPath();
+			gd.moveTo(oldPoint[i][0].x,oldPoint[i][0].y);//移动到oldPoint第一组里面的第一个点
+			for(var j=1;j<n;j++){
+				gd.lineTo(oldPoint[i][j].x,oldPoint[i][j].y);
+			}
+			gd.closePath();
+			var alpha=i/oldPoint.length;
+			//gd.strokeStyle='rgba(255,125,0,'+alpha+')';
+			gd.strokeStyle='rgba('+color.r+','+color.g+','+color.b+','+alpha+')';
+			gd.stroke();
+		}
+	},30);
+
+	function drawPoint(p){
+		gd.fillStyle='rgba(255,125,0,0)';
+		gd.fillRect(p.x,p.y,p.w,p.h);
+		//gd.strokeRect(p.x,p.y,p.w,p.h);//矩形边框
+	}
+}
+</script>
+</head>
+<body>
+<canvas id="c1"></canvas>
+</body>
+</html>
